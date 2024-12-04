@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clasificador Accidentes</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Servidor APP SAD</h1>
+        <p>Bienvenido a mi servidor Flask en localhost.</p>
+        <div id="status"></div>
+            
+        <div class="row">
+          <div class="col-md-4">
+            <form id="uploadForm">
+              <label for="imageUrl">URL de la imagen:</label>
+              <input type="text" id="imageUrl" name="image_url" placeholder="Ingresa una URL">
+              <button type="submit">Enviar</button>
+            </form>
+          </div>
+      
+          <div class="col-md-4">
+            <div id="originalImageContainer">
+              <h2>Imagen Original</h2>
+              <p>No se ha cargado ninguna imagen.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div id="processedImageContainer">
+              <h2>Imagen Procesada</h2>
+              <p>No se ha procesado ninguna imagen.</p>
+            </div>
+          </div>
+        </div>
+      
+        <div class="row">
+          <div class="col-md-12">
+            <div id="classificationReport">
+              <h2>Reporte de Clasificación</h2>
+              <p>No se ha generado ningún reporte.</p>
+            </div>
+            <div id="classificationReport2">
+                <h2>Reporte de Gemini</h2>
+                <p>No se ha generado ningún reporte.</p>
+              </div>
+          </div>
+        </div>
+      </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            var imageUrl = document.getElementById('imageUrl').value;
+            var originalImageContainer = document.getElementById('originalImageContainer');
+            var processedImageContainer = document.getElementById('processedImageContainer');
+            var classificationReport = document.getElementById('classificationReport');
+            var statusDiv = document.getElementById('status');
+
+            // Limpiar secciones previas
+            originalImageContainer.innerHTML = '<h2>Imagen Original</h2>';
+            processedImageContainer.innerHTML = '<h2>Imagen Procesada</h2>';
+            classificationReport.innerHTML = '<h2>Reporte de Clasificación</h2>';
+            classificationReport2.innerHTML = '<h2>Reporte de Gemini</h2>';
+            statusDiv.innerHTML = '';
+
+            if (imageUrl) {
+                // Mostrar imagen original
+                var originalImg = document.createElement('img');
+                originalImg.src = imageUrl;
+                originalImg.alt = 'Imagen Original';
+                originalImg.onerror = function() {
+                    originalImageContainer.innerHTML = '<h2>Imagen Original</h2><p>La URL no es válida o no apunta a una imagen.</p>';
+                };
+                originalImageContainer.appendChild(originalImg);
+            
+                // Enviar URL para procesar la imagen con Flask (subir_imagen)
+                fetch('/subir_imagen', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'image_url=' + encodeURIComponent(imageUrl)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'Success') {
+                        showGemini(data.gemini_output);
+                        console.log('Imagen procesada y descripción generada:', data.gemini_output);
+                    } else {
+                        showError(data.message);
+                    }
+                })
+                .catch(error => showError(error));
+
+                // Enviar URL para procesar la imagen con YOLO
+                fetch('/yolov8', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'image_url=' + encodeURIComponent(imageUrl)
+                }).then(response => response.json())
+                .then(data => {
+                    if (data.status === 'Success') {
+                        // Mostrar imagen procesada
+                        var processedImg = document.createElement('img');
+                        processedImg.src = data.processed_image_url;
+                        processedImg.alt = 'Imagen Procesada';
+                        processedImageContainer.appendChild(processedImg);
+
+                        // Llamar al modelo de clasificación
+                        classifyProcessedImage(data.processed_image_url, imageUrl);
+                    } else {
+                        showError(data.message);
+                    }
+                })
+                .catch(error => showError(error));
+            } else {
+                statusDiv.innerHTML = '<p>Por favor, ingresa una URL válida.</p>';
+            }
+        });
+
+        function classifyProcessedImage(processedImageUrl, originalImageUrl) {
+            fetch('/classify', { 
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    processed_image_url: processedImageUrl,
+                    original_image_url: originalImageUrl
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'Success') {
+                    showClassification(data.predicted_class, data.predictions, data.gemini_output, processedImageUrl, originalImageUrl);
+                } else {
+                    showError(data.message);
+                }
+            })
+            .catch(error => showError(error));
+        }
+
+        function showClassification(predictedClass, predictions, geminiOutput, processedImageUrl, originalImageUrl) {
+    var classificationReport = document.getElementById('classificationReport');
+    classificationReport.innerHTML = '<h2>Reporte de Clasificación</h2>';
+
+    // Mostrar la clase predicha y las probabilidades
+    if (predictedClass !== null && predictions !== null) {
+        var predictedClassMessage = document.createElement('p');
+        predictedClassMessage.textContent = `Clase predicha (Modelo de Clasificación): ${predictedClass}`;
+        classificationReport.appendChild(predictedClassMessage);
+
+        var probabilitiesMessage = document.createElement('p');
+        probabilitiesMessage.textContent = 'Probabilidades por clase:';
+        classificationReport.appendChild(probabilitiesMessage);
+
+        var ul = document.createElement('ul');
+        predictions.forEach((prob, index) => {
+            var li = document.createElement('li');
+            li.textContent = `Clase ${index}: ${prob.toFixed(2)}`;
+            ul.appendChild(li);
+        });
+        classificationReport.appendChild(ul);
+    }
+
+    function showGemini(geminiOutput){
+    
+    var classificationReport = document.getElementById('classificationReport2');
+    classificationReport.innerHTML = '<h2>Reporte de Gemini</h2>';
+            // Mostrar los resultados de Gemini si existen
+    if (geminiOutput !== null) {
+
+        var geminiReportContent = document.createElement('p');
+        geminiReportContent.textContent = geminiOutput;
+        classificationReport.appendChild(geminiReportContent);
+    }
+    }
+
+
+    // Mostrar imágenes en el reporte de clasificación
+    if (originalImageUrl && processedImageUrl) {
+        var imageSection = document.createElement('div');
+        var originalImage = document.createElement('img');
+        originalImage.src = originalImageUrl;
+        originalImage.alt = 'Imagen Original en Reporte';
+        imageSection.appendChild(originalImage);
+
+        var processedImage = document.createElement('img');
+        processedImage.src = processedImageUrl;
+        processedImage.alt = 'Imagen Procesada en Reporte';
+        imageSection.appendChild(processedImage);
+
+        classificationReport.appendChild(imageSection);
+    }
+}
+
+        function showError(error) {
+            var statusDiv = document.getElementById('status');
+            var newMessage = document.createElement('p');
+            newMessage.textContent = 'Error: ' + (error.message || error);
+            newMessage.style.color = 'red';
+            statusDiv.appendChild(newMessage);
+        }
+    </script>
+</body>
+</html>

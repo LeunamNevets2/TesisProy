@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clasificación de Accidentes</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles2.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Clasificación y Descripción de Accidentes</h1>
+        <form id="image-form">
+            <label for="image-url">Introduce la URL de la imagen:</label>
+            <input type="text" id="image-url" name="image-url" placeholder="URL de la imagen" required>
+            <button type="submit">Enviar Imagen</button>
+        </form>
+
+        <div id="steps">
+            <!-- Aquí se mostrarán los pasos -->
+        </div>
+
+        <div id="result">
+            <!-- Aquí se mostrará el resultado -->
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script2.js') }}"></script>
+</body>
+</html>

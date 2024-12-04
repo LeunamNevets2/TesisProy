@@ -1,0 +1,129 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #e8eaf6, #bbdefb);
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: top;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+h1 {
+    font-size: 2.5rem;
+    color: #1e88e5;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+p {
+    font-size: 1rem;
+    margin-bottom: 20px;
+    color: #555;
+    text-align: center;
+}
+
+/* Container to center the content */
+.container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+/* Form Styles */
+form {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 20px 25px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 0 auto;
+}
+
+form label {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #333;
+    display: block;
+    margin-bottom: 8px;
+}
+
+form input[type="text"], 
+form input[type="file"] {
+    width: 100%;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: 0.3s;
+}
+
+form input[type="text"]:focus, 
+form input[type="file"]:focus {
+    border-color: #1e88e5;
+    box-shadow: 0 0 5px rgba(30, 136, 229, 0.5);
+    outline: none;
+}
+
+form button {
+    background: #1e88e5;
+    color: white;
+    font-size: 1rem;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+}
+
+form button:hover {
+    background: #1565c0;
+}
+
+form button:active {
+    background: #0d47a1;
+}
+
+/* Status Message */
+#status {
+    margin-top: 15px;
+    padding: 10px;
+    font-size: 1rem;
+    border-radius: 6px;
+    display: none; /* Hide by default */
+    background-color: #f1f1f1;
+    color: #333;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Image Preview */
+#imageContainer {
+    margin-top: 20px;
+    padding: 20px;
+    text-align: center;
+    background: #f5f5f5;
+    border: 2px dashed #bbb;
+    border-radius: 8px;
+}
+
+#imageContainer p {
+    color: #777;
+    font-size: 1rem;
+}
+
+#imageContainer img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-top: 15px;
+}
